@@ -81,7 +81,14 @@ public class CustomTabManager {
             public void onCustomTabsServiceConnected(ComponentName componentName,
                                                      CustomTabsClient customTabsClient) {
                 Logger.debug("CustomTabsService is connected");
-                customTabsClient.warmup(0);
+                try {
+                    customTabsClient.warmup(0);
+                } catch (IllegalStateException e) {
+                    // Ignore error when starting the warm up service. May slow down the opening of the browser on some devices
+                    // But at least it will not crash in these cases.
+                    // See; https://github.com/openid/AppAuth-Android/issues/425
+                    Logger.error("onCustomTabsServiceConnected: warm-up service startup race condition.", e);
+                }
                 setClient(customTabsClient);
             }
 
